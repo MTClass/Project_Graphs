@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+
+<style>
+
+.arc text {
+  font: 20px sans-serif bold;
+  text-anchor: center;
+}
+
+.arc path {
+  stroke: #fff;
+}
+
+</style>
+<svg width="960" height="500"></svg>
+<script src="https://d3js.org/d3.v4.min.js"></script>
+<script>
+
+var svg = d3.select("svg"),
+    width = +svg.attr("width"),
+    height = +svg.attr("height"),
+    radius = Math.min(width, height) / 2,
+    g = svg.append("g").attr("transform", "translate(" + width / 2 + "," + height / 2 + ")");
+
+var color = d3.scaleOrdinal(["yellow", "green", "blue", "orange", "pink", "red", "purple"]);
+
+// NEW: Title
+svg.append('text')
+    .attr('x', width / 5)
+    .attr('y', "1.5em")
+    .style('font-size', '1.5em')
+    .style('text-anchor', 'middle')
+    .text('Maryland Population by Race')
+
+// NEW: Source
+svg.append('text')
+    .attr('x', width / 5)
+    .attr('y', "30em")
+    .style('font-size', '1em')
+    .style('text-anchor', 'middle')
+    .text('Source : ACS 2011-2015')
+
+
+var pie = d3.pie()
+    .sort(null)
+    .value(function(d) { return d.population; });
+
+var path = d3.arc()
+    .outerRadius(radius - 10)
+    .innerRadius(0);
+
+var label = d3.arc()
+    .outerRadius(radius - 100)
+    .innerRadius(radius - 100
+                );
+  
+  var url = "https://raw.githubusercontent.com/MTClass/Project_Graphs/master/Race.csv"
+
+d3.csv(url, function(d) {
+  d.population = +d.population;
+  return d;
+}, function(error, data) {
+  if (error) throw error;
+
+  var arc = g.selectAll(".arc")
+    .data(pie(data))
+    .enter().append("g")
+      .attr("class", "arc");
+
+  arc.append("path")
+      .attr("d", path)
+      .attr("fill", function(d) { return color(d.data.race); });
+
+  arc.append("text")
+      .attr("transform", function(d) { return "translate(" + label.centroid(d) + ")"; })
+      .attr("dy", "0.35em")
+      .text(function(d) { return d.data.race; });
+});
+
+</script>
